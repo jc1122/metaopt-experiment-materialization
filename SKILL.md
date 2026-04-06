@@ -21,7 +21,21 @@ The orchestrator validates that `mode = materialization` uses `model_class = str
 
 ## Input Contract
 
-The orchestrator provides these inputs via the subagent prompt:
+The orchestrator provides these inputs via the subagent prompt.
+
+### Standard Envelope (provided by orchestrator on every dispatch)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `campaign_id` | string | Campaign identifier |
+| `current_iteration` | integer | Current iteration number |
+| `slot_id` | string | The slot ID dispatching this worker |
+| `attempt` | integer | Attempt number for this dispatch (1-indexed) |
+| `materialization_mode` | string | One of `"standard"`, `"remediation"`, or `"conflict_resolution"` |
+
+### Mode-Specific Inputs
+
+**Standard mode** (`materialization_mode: "standard"` — during `MATERIALIZE_CHANGESET`):
 
 | Input | Source | Description |
 |-------|--------|-------------|
@@ -31,7 +45,28 @@ The orchestrator provides these inputs via the subagent prompt:
 | Baseline implementation | Orchestrator context | Reference implementation for comparison |
 | Key learnings | `state.json → key_learnings` | Relevant learnings from prior iterations |
 
-The experiment design specification is the authoritative guide for what code changes to make. If the design spec is ambiguous or infeasible, report the blocker clearly instead of guessing.
+**Remediation mode** (`materialization_mode: "remediation"` — during `LOCAL_SANITY` after diagnosis):
+
+| Input | Source | Description |
+|-------|--------|-------------|
+| `code_guidance` | Diagnosis output | Targeted code change description from diagnosis `fix_recommendation.code_guidance` |
+| Original experiment design | `state.selected_experiment.design` | The original design for context |
+| Current local changeset | `state.local_changeset` | The current patch state to build upon |
+| Diagnosis history | `state.selected_experiment.diagnosis_history` | Prior diagnosis attempts for this experiment |
+| Project codebase | Isolated worktree | Worktree with current patch applied |
+
+**Conflict-resolution mode** (`materialization_mode: "conflict_resolution"` — when mechanical patch integration fails):
+
+| Input | Source | Description |
+|-------|--------|-------------|
+| Conflicting patches | Orchestrator context | The patches that failed to apply cleanly |
+| Base worktree state | Integration worktree | The worktree at the point of conflict |
+| Experiment design context | `state.selected_experiment.design` | For intent understanding |
+| Key learnings | `state.key_learnings` | Relevant learnings |
+
+All three modes produce the same output shape (unified diff patch artifact + metadata).
+
+The experiment design specification is the authoritative guide for what code changes to make in standard mode. The `code_guidance` is the authoritative guide in remediation mode. If the guidance is ambiguous or infeasible, report the blocker clearly instead of guessing.
 
 ## Output Contract
 
@@ -124,6 +159,8 @@ When the orchestrator persists the materialization output to `state.json → loc
 9. **No model class downgrade** — this skill runs as `strong_coder`. Do not request or accept a weaker model class.
 
 10. **Traceability** — include the `producer_slot_id` in all output metadata so the orchestrator can trace artifacts back to this worker.
+
+11. **Respect the materialization mode** — in standard mode, implement the experiment design. In remediation mode, apply the diagnosis code_guidance to fix the identified issue. In conflict-resolution mode, resolve the merge conflict while preserving the intent of both patches. Do not mix concerns across modes.
 
 ## Common Mistakes
 
