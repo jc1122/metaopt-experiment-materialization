@@ -1,0 +1,13 @@
+# Catalog metadata for OpenAI/Codex-style runtimes.
+# This file is not consumed by the GitHub Copilot orchestration runtime described in SKILL.md.
+interface:
+  display_name: "Metaopt Experiment Materialization"
+  short_description: "Implement experiment designs as code changes and patch artifacts"
+  categories:
+    - ml
+    - research
+    - coding
+  default_prompt: >
+    Implement the experiment design as concrete code changes in an isolated
+    worktree. Produce a unified diff patch artifact, immutable artifacts
+    for the batch manifest, and sanity verification notes.
