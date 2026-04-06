@@ -42,7 +42,6 @@ The orchestrator provides these inputs via the subagent prompt.
 | Experiment design specification | Design phase output | Concrete experiment spec: what to change, where, and why |
 | Campaign config | `ml_metaopt_campaign.yaml` | `code_roots`, `data_roots`, `artifacts.exclude` patterns, `execution` config |
 | Project codebase | Worktree access | An isolated git worktree for making changes |
-| Baseline implementation | Orchestrator context | Reference implementation for comparison |
 | Key learnings | `state.json → key_learnings` | Relevant learnings from prior iterations |
 
 **Remediation mode** (`materialization_mode: "remediation"` — during `LOCAL_SANITY` after diagnosis):
@@ -124,7 +123,7 @@ The unified diff patch artifact is the primary deliverable. It follows the contr
 
 The orchestrator integrates patches mechanically:
 1. Applies the patch to a dedicated integration worktree
-2. If application conflicts or requires a non-trivial merge, the orchestrator dispatches a `strong_coder` for conflict resolution
+2. If application conflicts or requires a non-trivial merge, the orchestrator dispatches `metaopt-experiment-materialization` in conflict-resolution mode
 3. The patched worktree is then used for `LOCAL_SANITY` verification
 
 ### Local Changeset Fields
