@@ -176,6 +176,12 @@ When the orchestrator persists the materialization output to `state.json → loc
 | Using the orchestrator's working tree | Always use the isolated worktree |
 | Omitting sanity verification notes | Always describe what `LOCAL_SANITY` should check |
 
+## Lane
+
+- **Lane:** materialization (auxiliary slot class)
+- **Model class:** `strong_coder`
+- **Dispatched by:** `MATERIALIZE_CHANGESET` state
+
 ## References
 
 - `ml-metaoptimization/references/worker-lanes.md` — Materialization Lane contract and Patch artifact contract
